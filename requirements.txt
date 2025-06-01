@@ -17,3 +17,7 @@ torchaudio
 tqdm
 laion-clap
 torchvision
+tensorflow
+scipy
+resampy
+tf-slim

@@ -9,6 +9,15 @@ import os
 import subprocess
 import numpy as np
 import logging
+import tensorflow as tf
+import wave
+import sys
+
+# add audio_feature_extractor to python path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'audio_feature_extractor'))
+import vggish_input
+import vggish_params
+import vggish_slim
 
 # 로깅 레벨 설정
 logging.getLogger('laion_clap').setLevel(logging.ERROR)
@@ -122,12 +131,50 @@ def save_clap_embedding(audio_path, output_dir):
         print(f"Error in save_clap_embedding: {e}")
         return False
 
+def extract_vggish_features(audio_path, output_dir):
+    try:
+        # VGGish model file path
+        checkpoint_path = os.path.join('audio_feature_extractor', 'vggish_model.ckpt')
+        pca_params_path = os.path.join('audio_feature_extractor', 'vggish_pca_params.npz')
+        
+        # calculate audio length
+        with wave.open(audio_path, 'r') as f:
+            frames = f.getnframes()
+            rate = f.getframerate()
+            wav_length = int(frames / float(rate))
+        
+        # create VGGish input
+        input_batch = vggish_input.wavfile_to_examples(audio_path, wav_length)
+        
+        # extract features from VGGish model
+        with tf.Graph().as_default(), tf.compat.v1.Session() as sess:
+            vggish_slim.define_vggish_slim()
+            vggish_slim.load_vggish_slim_checkpoint(sess, checkpoint_path)
+            
+            features_tensor = sess.graph.get_tensor_by_name(vggish_params.INPUT_TENSOR_NAME)
+            embedding_tensor = sess.graph.get_tensor_by_name(vggish_params.OUTPUT_TENSOR_NAME)
+            [embedding_batch] = sess.run([embedding_tensor], feed_dict={features_tensor: input_batch})
+            
+            # save features
+            output_path = os.path.join(output_dir, "audio_feature.npy")
+            np.save(output_path, embedding_batch)
+            print(f"Saved VGGish features to {output_path}")
+            return True
+    except Exception as e:
+        print(f"Error in extract_vggish_features: {e}")
+        return False
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', type=str, default='SAT_T_1s')
     parser.add_argument('-c', '--chunk_length', type=float, default=0.25)
+    parser.add_argument('-f', '--fps', type=int, default=4)
     parser.add_argument('-s', '--sample_name', type=str, default='funny_dogs.mp4')
     args = parser.parse_args()
+
+    # make directory for samples
+    os.makedirs(SAMPLE_PATH, exist_ok=True)
+    os.makedirs(SAMPLE_CHUNKED_PATH, exist_ok=True)
 
     # check if the sample path exists
     sample_video_path = os.path.join(SAMPLE_PATH, args.sample_name)
@@ -157,16 +204,25 @@ def main():
         os.makedirs(segment_dir, exist_ok=True)
 
         # extract audio and save it to the output directory
-        audio_path = os.path.join(segment_dir, f"{start}_{end}.wav")
+        audio_path = os.path.join(segment_dir, f"audio.wav")
         if not os.path.exists(audio_path):
             # extract audio from the video with precise timestamps
             command = ['ffmpeg', '-i', sample_video_path, '-ss', str(start), '-t', str(end - start), 
                       '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path]
             subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
+        # extract image frames from the video
+        image_dir = os.path.join(segment_dir, "images")
+        os.makedirs(image_dir, exist_ok=True)
+        command = ['ffmpeg', '-i', sample_video_path, '-ss', str(start), '-t', str(end - start), 
+                  '-vf', f'fps={args.fps}', image_dir + '/%06d.jpg']
+        subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
         # extract embeddings and save it to the output directory
         save_clap_embedding(audio_path, segment_dir)
-            
+        
+        # extract VGGish features
+        extract_vggish_features(audio_path, segment_dir)
 
 if __name__ == "__main__":
     main()

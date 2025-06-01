@@ -2,6 +2,8 @@
 __pycache__/
 samples/*
 samples_chunked/*
+audio_feature_extractor/*.ckpt
+audio_feature_extractor/*.npz
 *.pyc
 *.pyo
 *.pyd
