@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+samples/*
+samples_chunked/*
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.tmp
