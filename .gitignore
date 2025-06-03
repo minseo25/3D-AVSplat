@@ -16,3 +16,29 @@ avis/checkpoints/*.pth
 avis/pre_models/*.pth
 avis/pre_models/*.pkl
 avis/datasets/*
+
+# avis results
+avis/results/*
+
+# detectron2 build files
+avis/avism/detectron2/build/
+avis/avism/detectron2/detectron2.egg-info/
+avis/avism/detectron2/**/*.so
+avis/avism/detectron2/**/*.cpp
+avis/avism/detectron2/**/*.cu
+
+# mask2former ops build files
+avis/mask2former/modeling/pixel_decoder/ops/build/
+avis/mask2former/modeling/pixel_decoder/ops/MultiScaleDeformableAttention.egg-info/
+avis/mask2former/modeling/pixel_decoder/ops/**/*.so
+avis/mask2former/modeling/pixel_decoder/ops/**/*.cpp
+avis/mask2former/modeling/pixel_decoder/ops/**/*.cu
+
+# Python build artifacts
+**/build/
+**/dist/
+**/*.egg-info/
+**/*.so
+**/*.pyd
+**/*.dylib
+**/*.dll

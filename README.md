@@ -17,21 +17,22 @@ pip install --cache-dir=$PIP_CACHE_DIR -r requirements.txt
 # install detectron, mask2former
 cd avis/avism/detectron2
 pip install -e .
-cd /data/3D-AVSplat/avis
-cd mask2former/modeling/pixel_decoder/ops
+cd ../../mask2former/modeling/pixel_decoder/ops
 sh make.sh
-cd /data/3D-AVSplat/
-
-# download VGGISH checkpoints, params
-cd audio_feature_extractor/
-wget https://storage.googleapis.com/audioset/vggish_model.ckpt
-wget https://storage.googleapis.com/audioset/vggish_pca_params.npz
+cd ../../../../
 
 # download AVIS checkpoints
 # https://github.com/ruohaoguo/avis
-cd avis/
 mkdir pre_models # and download pre-trained backbones
 mkdir checkpoints # and download model checkpoints
+
+# download VGGISH checkpoints, params
+cd ../audio_feature_extractor/
+wget https://storage.googleapis.com/audioset/vggish_model.ckpt
+wget https://storage.googleapis.com/audioset/vggish_pca_params.npz
+
+# move back to project root
+cd ..
 ```
 
 ## Usage
