@@ -21,3 +21,12 @@ tensorflow
 scipy
 resampy
 tf-slim
+opencv-python
+cython
+shapely==1.8.4
+timm
+submitit
+scikit-image
+setuptools==59.4.0
+beartype
+ninja

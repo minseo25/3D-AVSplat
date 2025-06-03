@@ -10,3 +10,9 @@ audio_feature_extractor/*.npz
 *.pyw
 *.pyz
 *.tmp
+
+# avis checkpoints, pretrained models
+avis/checkpoints/*.pth
+avis/pre_models/*.pth
+avis/pre_models/*.pkl
+avis/datasets/*
