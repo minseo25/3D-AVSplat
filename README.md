@@ -73,12 +73,13 @@ cd ..
          │    ├── frame1.jpg
          │    ├── ...
          └── your_video_name_st3_et3
-               ├── ...
+              ├── ...
       └── WAVAudios/
          ├── your_video_name_st1_et1.wav
          ├── your_video_name_st2_et2.wav
          └── your_video_name_st3_et3.wav
    ```
+
 
 4. Run the following command in the project root:
    ```bash

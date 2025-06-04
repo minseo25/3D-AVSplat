@@ -53,14 +53,19 @@ class TrackVisualizer(Visualizer):
         if labels is not None:
             labels = ["[{}] ".format(_id) + l for _id, l in enumerate(labels)]
 
+        binary_masks = None
+
         if preds.has("pred_masks"):
             masks = np.asarray(preds.pred_masks)
+            #Save mask for 2D visualization for pixel-wise masks
+            binary_masks = np.any(masks, axis=0).astype(np.uint8)
+
             masks = [GenericMask(x, self.output.height, self.output.width) for x in masks]
         else:
             masks = None
 
         if classes is None:
-            return self.output
+            return self.output, binary_masks
 
         colors = [
             self._jitter([x / 255 for x in self.metadata.thing_colors[c]], id) for id, c in enumerate(classes)

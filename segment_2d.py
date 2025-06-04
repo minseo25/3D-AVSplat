@@ -106,10 +106,27 @@ if __name__ == "__main__":
 
         start_time = time.time()
         with autocast():
-            predictions, visualized_output = demo.run_on_video(vid_frames, audio_feats)
+            predictions, visualized_output, binary_mask_output = demo.run_on_video(vid_frames, audio_feats)
 
         os.makedirs(os.path.join(args.output_dir, video_name), exist_ok=True)
 
-        for path, _vis_output in zip(sorted(os.listdir(os.path.join(args.input_dir, video_name)), key=extract_number), visualized_output):
+        for path, _vis_output, _mask in zip(sorted(os.listdir(os.path.join(args.input_dir, video_name)), key=extract_number), visualized_output, binary_mask_output):
             out_filename = os.path.join(args.output_dir, video_name, path)
             _vis_output.save(out_filename)
+
+            # Save mask for npy file an binary image
+            mask_base = os.path.splitext(path)[0] + ".npy"
+            mask_save_dir = os.path.join(args.output_dir, video_name, "masks")
+            os.makedirs(mask_save_dir, exist_ok=True)
+            mask_filename = os.path.join(mask_save_dir, mask_base)
+            np.save(mask_filename, _mask)
+
+            # Save mask as black & white image (png)
+            binary_image_dir = os.path.join(args.output_dir, video_name, "binary_masks")
+            os.makedirs(binary_image_dir, exist_ok=True)
+            if _mask is not None:
+                mask_img = draw_binary_mask(vid_frames[extract_number(path)-1], _mask)
+                mask_img_filename = os.path.join(binary_image_dir, os.path.splitext(path)[0] + ".png")
+                cv2.imwrite(mask_img_filename, mask_img)
+            else:
+                print(f"No mask for {path}, skipping binary mask saving.")
