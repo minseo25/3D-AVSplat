@@ -66,6 +66,8 @@ class VisualizationDemo(object):
 
         frame_masks = list(zip(*pred_masks))
         total_vis_output = []
+        total_vis_mask = []
+
         for frame_idx in range(len(frames)):
             frame = frames[frame_idx][:, :, ::-1]
             visualizer = TrackVisualizer(frame, self.metadata, instance_mode=self.instance_mode)
@@ -75,10 +77,11 @@ class VisualizationDemo(object):
                 ins.pred_classes = pred_labels
                 ins.pred_masks = torch.stack(frame_masks[frame_idx], dim=0)
 
-            vis_output = visualizer.draw_instance_predictions(predictions=ins)
+            vis_output , binary_mask_out = visualizer.draw_instance_predictions(predictions=ins)
             total_vis_output.append(vis_output)
+            total_vis_mask.append(binary_mask_out)
 
-        return predictions, total_vis_output
+        return predictions, total_vis_output, total_vis_mask
 
 
 class VideoPredictor(DefaultPredictor):
