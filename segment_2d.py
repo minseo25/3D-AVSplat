@@ -80,6 +80,11 @@ def get_parser():
 def extract_number(filename):
     return int(re.search(r'(\d+).jpg$', filename).group(1))
 
+# given _mask with given image, draw a white and black mask
+def draw_binary_mask(image, _mask):
+    mask_img = (_mask.astype(np.uint8)) * 255  # 0 or 255
+    mask_img = np.stack([mask_img]*3, axis=-1)
+    return mask_img
 
 if __name__ == "__main__":
     mp.set_start_method("spawn", force=True)

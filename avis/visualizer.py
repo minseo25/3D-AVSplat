@@ -88,4 +88,4 @@ class TrackVisualizer(Visualizer):
             alpha=alpha,
         )
 
-        return self.output
+        return self.output, binary_masks
