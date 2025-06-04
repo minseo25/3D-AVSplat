@@ -70,33 +70,47 @@ def waveform_to_examples(data, sample_rate):
   return log_mel_examples
 
 
-def wavfile_to_examples(wav_file, num_secs):
+def wavfile_to_examples(wav_file, duration_sec, step_sec=1.0):
     """Convenience wrapper around waveform_to_examples() for a common WAV format.
-        Args:
-        wav_file: String path to a file, or a file-like object. The file
-        is assumed to contain WAV audio data with signed 16-bit PCM samples.
-
-        Returns:
-        See waveform_to_examples.
+    Args:
+        wav_file: String path to a file, or a file-like object (16-bit PCM WAV).
+        duration_sec: Total duration in seconds (float).
+        step_sec: Time step in seconds (e.g. 1.0 → 1fps, 0.5 → 2fps, 0.25 → 4fps).
+    Returns:
+        np.ndarray of shape (num_frames, 96, 64): log-mel spectrogram patches.
     """
     sr, snd = wavfile.read(wav_file)
-    L = sr * num_secs
-    wav_data = snd[:L]
+    total_samples = int(round(sr * duration_sec))
+    wav_data = snd[:total_samples]
+    
     # Convert to mono if stereo
     if len(wav_data.shape) > 1:
         wav_data = np.mean(wav_data, axis=1)
     wav_data = wav_data / 32768.0  # Convert to [-1.0, +1.0]
-    T = num_secs
-    log_mel = np.zeros([T, 96, 64])
+    
+    # calculate the actual number of frames (rounded up)
+    num_frames = int(np.ceil(duration_sec / step_sec))
+    log_mel = np.zeros([num_frames, vggish_params.NUM_FRAMES, vggish_params.NUM_BANDS])
 
-    for i in range(T):
-        s = i * sr
-        e = (i + 1) * sr
-        data = wav_data[s:e]
+    for i in range(num_frames):
+        start_time = i * step_sec
+        end_time = min((i + 1) * step_sec, duration_sec)
+        duration = end_time - start_time
+        
+        # cut out the audio in sample unit
+        start_sample = int(round(start_time * sr))
+        end_sample = int(round(end_time * sr))
+        data = wav_data[start_sample:end_sample]
+        
+        # if the last chunk is shorter than step_sec, pad with 0
+        target_length = int(round(step_sec * sr))
+        if data.shape[0] < target_length:
+            data = np.pad(data, (0, target_length - data.shape[0]), mode='constant')
+
         wave_data_array = waveform_to_examples(data, sr)
-        if len(wave_data_array) != 0:
-            log_mel[i, :, :] = wave_data_array
+        if wave_data_array.shape[0] > 0:
+            log_mel[i, :, :] = wave_data_array[0]
         else:
-            log_mel[i, :, :] = np.zeros((1, 96, 64), dtype=float)
+            log_mel[i, :, :] = np.zeros((vggish_params.NUM_FRAMES, vggish_params.NUM_BANDS))
 
     return log_mel

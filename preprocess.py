@@ -144,7 +144,14 @@ def save_clap_embedding(audio_path, output_dir):
         print(f"Error in save_clap_embedding: {e}")
         return False
 
-def extract_vggish_features(audio_path, output_dir):
+def extract_vggish_features(audio_path, output_dir, step_sec=1.0):
+    """
+    Extract VGGish features from audio file
+    Args:
+        audio_path: Path to audio file
+        output_dir: Directory to save features
+        step_sec: Time step in seconds (default: 1.0 for 1fps)
+    """
     try:
         # VGGish model file path
         checkpoint_path = os.path.join('audio_feature_extractor', 'vggish_model.ckpt')
@@ -152,12 +159,12 @@ def extract_vggish_features(audio_path, output_dir):
         
         # calculate audio length
         with wave.open(audio_path, 'r') as f:
-            frames = f.getnframes()
-            rate = f.getframerate()
-            wav_length = int(frames / float(rate))
+            total_samples = f.getnframes()
+            sr = f.getframerate()
+            duration_sec = total_samples / float(sr)
         
-        # create VGGish input
-        input_batch = vggish_input.wavfile_to_examples(audio_path, wav_length)
+        # pass duration_sec and step_sec to split the audio
+        input_batch = vggish_input.wavfile_to_examples(audio_path, duration_sec, step_sec=step_sec)
         
         # extract features from VGGish model
         with tf.Graph().as_default(), tf.compat.v1.Session() as sess:
@@ -243,27 +250,27 @@ def main():
                   '-vf', f'fps={fps}', image_dir + '/%06d.jpg']
         subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
-        # 디버깅 정보 출력
-        print(f"\nSegment: {segment_name}")
-        print(f"Audio path: {audio_path}")
-        print(f"Image dir: {image_dir}")
-        frame_files = sorted(os.listdir(image_dir))
-        print(f"Number of frames: {len(frame_files)}")
-        print(f"Frame files: {frame_files}")
-        with wave.open(audio_path, 'r') as f:
-            audio_frames = f.getnframes()
-            audio_rate = f.getframerate()
-            audio_duration = audio_frames / float(audio_rate)
-            print(f"Audio duration: {audio_duration:.4f}s")
-            print(f"Audio frames: {audio_frames}")
-            print(f"Audio rate: {audio_rate}")
-        print(f"Expected duration (frames * chunk): {len(frame_files) * args.chunk_length:.4f}s")
-        print(f"Start: {start}, End: {end}, Duration: {end-start}")
+        # # print debugging information
+        # print(f"\nSegment: {segment_name}")
+        # print(f"Audio path: {audio_path}")
+        # print(f"Image dir: {image_dir}")
+        # frame_files = sorted(os.listdir(image_dir))
+        # print(f"Number of frames: {len(frame_files)}")
+        # print(f"Frame files: {frame_files}")
+        # with wave.open(audio_path, 'r') as f:
+        #     audio_frames = f.getnframes()
+        #     audio_rate = f.getframerate()
+        #     audio_duration = audio_frames / float(audio_rate)
+        #     print(f"Audio duration: {audio_duration:.4f}s")
+        #     print(f"Audio frames: {audio_frames}")
+        #     print(f"Audio rate: {audio_rate}")
+        # print(f"Expected duration (frames * chunk): {len(frame_files) * args.chunk_length:.4f}s")
+        # print(f"Start: {start}, End: {end}, Duration: {end-start}")
         
-        # extract and save VGGish features
+        # extract and save VGGish features with step_sec
         vggish_output_path = os.path.join(SAMPLE_CHUNKED_PATH, "FEATAudios", f"{segment_name}.npy")
         if not os.path.exists(vggish_output_path):
-            extract_vggish_features(audio_path, os.path.dirname(vggish_output_path))
+            extract_vggish_features(audio_path, os.path.dirname(vggish_output_path), step_sec=args.chunk_length)
             # Rename the output file to match the desired structure
             temp_path = os.path.join(os.path.dirname(vggish_output_path), "audio_feature.npy")
             if os.path.exists(temp_path):
