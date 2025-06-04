@@ -13,6 +13,22 @@ import tensorflow as tf
 import wave
 import sys
 
+# 캐시 디렉토리 설정
+CACHE_DIR = '/data/.cache'
+os.makedirs(CACHE_DIR, exist_ok=True)
+os.makedirs(os.path.join(CACHE_DIR, 'huggingface'), exist_ok=True)
+os.makedirs(os.path.join(CACHE_DIR, 'torch/hub'), exist_ok=True)
+
+# 환경 변수 설정
+os.environ['TORCH_HOME'] = CACHE_DIR
+os.environ['HF_HOME'] = os.path.join(CACHE_DIR, 'huggingface')
+os.environ['HUGGINGFACE_HUB_CACHE'] = os.path.join(CACHE_DIR, 'huggingface')
+os.environ['TRANSFORMERS_CACHE'] = os.path.join(CACHE_DIR, 'huggingface')
+os.environ['CLAP_CACHE_DIR'] = os.path.join(CACHE_DIR, 'clap')
+
+# torch hub 캐시 디렉토리 설정
+torch.hub.set_dir(os.path.join(CACHE_DIR, 'torch/hub'))
+
 # add audio_feature_extractor to python path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'audio_feature_extractor'))
 import vggish_input
@@ -22,14 +38,6 @@ import vggish_slim
 # 로깅 레벨 설정
 logging.getLogger('laion_clap').setLevel(logging.ERROR)
 logging.getLogger('transformers').setLevel(logging.ERROR)
-
-# cache directory setting for oom prevention
-os.environ['TORCH_HOME'] = '/data/.cache'
-torch.hub.set_dir('/data/.cache/torch/hub')
-os.environ['HF_HOME'] = '/data/.cache/huggingface'
-os.environ['HUGGINGFACE_HUB_CACHE'] = '/data/.cache/huggingface'
-os.environ['TRANSFORMERS_CACHE'] = '/data/.cache/huggingface'
-os.environ['CLAP_CACHE_DIR'] = '/data/.cache/clap'
 
 # parameters
 DEVICE = torch.device('cpu' if not torch.cuda.is_available() else 'cuda')
@@ -167,14 +175,21 @@ def extract_vggish_features(audio_path, output_dir):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', type=str, default='SAT_T_1s')
-    parser.add_argument('-c', '--chunk_length', type=float, default=0.25)
-    parser.add_argument('-f', '--fps', type=int, default=4)
+    parser.add_argument('-c', '--chunk_length', type=float, default=0.25, choices=[0.25, 0.5, 1.0])
     parser.add_argument('-s', '--sample_name', type=str, default='funny_dogs.mp4')
     args = parser.parse_args()
+    fps_lists = {0.25: 4, 0.5: 2, 1.0: 1}
+    fps = fps_lists[args.chunk_length]
 
     # make directory for samples
     os.makedirs(SAMPLE_PATH, exist_ok=True)
     os.makedirs(SAMPLE_CHUNKED_PATH, exist_ok=True)
+    
+    # make directories for chunked data
+    os.makedirs(os.path.join(SAMPLE_CHUNKED_PATH, "FEATAudios"), exist_ok=True)
+    os.makedirs(os.path.join(SAMPLE_CHUNKED_PATH, "FEATAudios_CLAP"), exist_ok=True)
+    os.makedirs(os.path.join(SAMPLE_CHUNKED_PATH, "JPEGImages"), exist_ok=True)
+    os.makedirs(os.path.join(SAMPLE_CHUNKED_PATH, "WAVAudios"), exist_ok=True)
 
     # check if the sample path exists
     sample_video_path = os.path.join(SAMPLE_PATH, args.sample_name)
@@ -192,37 +207,42 @@ def main():
         chunk_length=args.chunk_length
     )
 
-    # make output directory for chunked video
+    # process each non-silence segment
     target_name = args.sample_name.split(".")[0]
-    base_output_dir = os.path.join(SAMPLE_CHUNKED_PATH, target_name)
-    os.makedirs(base_output_dir, exist_ok=True)
-
-    # make embeddings for each non-silence segment
     for start, end in non_silence_segments:
-        # make output directory for each segment
-        segment_dir = os.path.join(base_output_dir, f"{start}_{end}")
-        os.makedirs(segment_dir, exist_ok=True)
-
-        # extract audio and save it to the output directory
-        audio_path = os.path.join(segment_dir, f"audio.wav")
+        segment_name = f"{target_name}_{start}_{end}"
+        
+        # extract audio and save it to WAVAudios
+        audio_path = os.path.join(SAMPLE_CHUNKED_PATH, "WAVAudios", f"{segment_name}.wav")
         if not os.path.exists(audio_path):
-            # extract audio from the video with precise timestamps
             command = ['ffmpeg', '-i', sample_video_path, '-ss', str(start), '-t', str(end - start), 
                       '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path]
             subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
-        # extract image frames from the video
-        image_dir = os.path.join(segment_dir, "images")
+        # extract image frames to JPEGImages
+        image_dir = os.path.join(SAMPLE_CHUNKED_PATH, "JPEGImages", segment_name)
         os.makedirs(image_dir, exist_ok=True)
         command = ['ffmpeg', '-i', sample_video_path, '-ss', str(start), '-t', str(end - start), 
-                  '-vf', f'fps={args.fps}', image_dir + '/%06d.jpg']
+                  '-vf', f'fps={fps}', image_dir + '/%06d.jpg']
         subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
-        # extract embeddings and save it to the output directory
-        save_clap_embedding(audio_path, segment_dir)
+        # extract and save VGGish features
+        vggish_output_path = os.path.join(SAMPLE_CHUNKED_PATH, "FEATAudios", f"{segment_name}.npy")
+        if not os.path.exists(vggish_output_path):
+            extract_vggish_features(audio_path, os.path.dirname(vggish_output_path))
+            # Rename the output file to match the desired structure
+            temp_path = os.path.join(os.path.dirname(vggish_output_path), "audio_feature.npy")
+            if os.path.exists(temp_path):
+                os.rename(temp_path, vggish_output_path)
         
-        # extract VGGish features
-        extract_vggish_features(audio_path, segment_dir)
+        # extract and save CLAP embeddings
+        clap_output_path = os.path.join(SAMPLE_CHUNKED_PATH, "FEATAudios_CLAP", f"{segment_name}.npy")
+        if not os.path.exists(clap_output_path):
+            save_clap_embedding(audio_path, os.path.dirname(clap_output_path))
+            # Rename the output file to match the desired structure
+            temp_path = os.path.join(os.path.dirname(clap_output_path), "clap_audio_embeds.npy")
+            if os.path.exists(temp_path):
+                os.rename(temp_path, clap_output_path)
 
 if __name__ == "__main__":
     main()

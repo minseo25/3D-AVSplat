@@ -21,6 +21,7 @@ avis/results/*
 
 # avis results
 avis/results/*
+samples_avis/*
 
 # detectron2 build files
 avis/avism/detectron2/build/

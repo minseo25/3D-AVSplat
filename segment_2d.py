@@ -55,17 +55,17 @@ def get_parser():
     )
     parser.add_argument(
         "--input-dir",
-        default="avis/datasets/test/JPEGImages/",
+        default="samples_chunked/JPEGImages", # "avis/datasets/test/JPEGImages/",
         help="Directory containing input video frames",
     )
     parser.add_argument(
         "--output-dir",
-        default="avis/results/",
+        default="samples_avis", # "avis/results/",
         help="Directory to save output visualizations",
     )
     parser.add_argument(
         "--audio-dir",
-        default="avis/datasets/test/FEATAudios/",
+        default="samples_chunked/FEATAudios", # "avis/datasets/test/FEATAudios/",
         help="Directory containing audio features",
     )
     parser.add_argument(

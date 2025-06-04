@@ -41,45 +41,54 @@ cd ..
 
 2. Run the following command in the project root:
    ```bash
-   python preprocess.py -s your_video_name.mp4
+   python preprocess.py -s your_video_name.mp4 -c 1.0
    ```
    This will segment the video into chunks based on audio silence detection
 
+   Optional arguments:
+   - `-m, --model`: Audio segmentation model name (default: SAT_T_1s)
+   - `-c, --chunk_length`: Length of each chunk in seconds (default: 0.25, choices: [0.25, 0.5, 1.0])
+     - 0.25s chunks: 4 fps
+     - 0.5s chunks: 2 fps
+     - 1.0s chunks: 1 fps
+   - `-s, --sample_name`: Name of the input video file (default: funny_dogs.mp4)
+
 3. The output will be organized as follows:
-   ```   samples_chunked/
-   └── video_name/
-       ├── 0.25_5.25/
-       │   ├── images/
-       │   │   └── (image frames)
-       │   ├── audio.wav
-       │   ├── clap_audio_embeds.npy
-       │   └── audio_feature.npy
-       ├── 9.5_13.75/
-       │   ├── images/
-       │   │   └── (image frames)
-       │   ├── audio.wav
-       │   ├── clap_audio_embeds.npy
-       │   └── audio_feature.npy
-       └── 15.5_19.25/
-           └── (same structure as above)
+   ``` 
+   samples_chunked/
+      └── FEATAudios/
+         ├── your_video_name_st1_et1.npy
+         ├── your_video_name_st2_et2.npy
+         └── your_video_name_st3_et3.npy
+      └── FEATAudios_CLAP/
+         ├── your_video_name_st1_et1.npy
+         ├── your_video_name_st2_et2.npy
+         └── your_video_name_st3_et3.npy
+      └── JPEGImages/
+         ├── your_video_name_st1_et1
+         │    ├── frame1.jpg
+         │    ├── frame2.jpg
+         │    ├── ....
+         ├── your_video_name_st2_et2
+         │    ├── frame1.jpg
+         │    ├── ...
+         └── your_video_name_st3_et3
+               ├── ...
+      └── WAVAudios/
+         ├── your_video_name_st1_et1.wav
+         ├── your_video_name_st2_et2.wav
+         └── your_video_name_st3_et3.wav
    ```
-
-Each chunk folder contains:
-- `images/`: Image frames used for AVIS (https://github.com/ruohaoguo/avis)
-- `audio.wav`: Chunked audio file
-- `clap_audio_embeds.npy`: CLAP audio embeddings
-- `audio_feature.npy`: Audio features used for AVIS (https://github.com/ruohaoguo/avis)
-
-=> will be updated soon
 
 4. Run the following command in the project root:
    ```bash
    python segment_2d.py
    ```
    This will apply 2D audio-visual segmentation by frame level.
+
    Optional arguments:
    - `--config-file`: Path to config file (default: avis/configs/avism/R50/avism_R50_IN.yaml)
-   - `--input-dir`: Directory containing input video frames (default: avis/datasets/test/JPEGImages/)
-   - `--output-dir`: Directory to save output visualizations (default: avis/results/)
-   - `--audio-dir`: Directory containing audio features (default: avis/datasets/test/FEATAudios/)
+   - `--input-dir`: Directory containing input video frames (default: samples_chunked/JPEGImages/)
+   - `--output-dir`: Directory to save output visualizations (default: samples_avis/)
+   - `--audio-dir`: Directory containing audio features (default: samples_chunked/FEATAudios/)
    - `--confidence`: Minimum score for instance predictions (default: 0.3)
