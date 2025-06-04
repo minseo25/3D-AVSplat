@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 samples/*
+!samples/funny_dogs.mp4
 samples_chunked/*
 audio_feature_extractor/*.ckpt
 audio_feature_extractor/*.npz
@@ -16,6 +17,7 @@ avis/checkpoints/*.pth
 avis/pre_models/*.pth
 avis/pre_models/*.pkl
 avis/datasets/*
+avis/results/*
 
 # avis results
 avis/results/*

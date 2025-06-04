@@ -41,7 +41,7 @@ cd ..
 
 2. Run the following command in the project root:
    ```bash
-   python run.py -s your_video_name.mp4
+   python preprocess.py -s your_video_name.mp4
    ```
    This will segment the video into chunks based on audio silence detection
 
@@ -69,3 +69,17 @@ Each chunk folder contains:
 - `audio.wav`: Chunked audio file
 - `clap_audio_embeds.npy`: CLAP audio embeddings
 - `audio_feature.npy`: Audio features used for AVIS (https://github.com/ruohaoguo/avis)
+
+=> will be updated soon
+
+4. Run the following command in the project root:
+   ```bash
+   python segment_2d.py
+   ```
+   This will apply 2D audio-visual segmentation by frame level.
+   Optional arguments:
+   - `--config-file`: Path to config file (default: avis/configs/avism/R50/avism_R50_IN.yaml)
+   - `--input-dir`: Directory containing input video frames (default: avis/datasets/test/JPEGImages/)
+   - `--output-dir`: Directory to save output visualizations (default: avis/results/)
+   - `--audio-dir`: Directory containing audio features (default: avis/datasets/test/FEATAudios/)
+   - `--confidence`: Minimum score for instance predictions (default: 0.3)
