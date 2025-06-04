@@ -96,6 +96,10 @@ def segment_audio(input_wav, model_name='SAT_T_1s', chunk_length=0.25):
         assert sr == SR, "Models are trained on 16khz, please sample your input to 16khz"
         wave = wave.to(DEVICE)
         
+        # 전체 길이를 chunk_length로 나눈 몫만큼만 처리
+        total_chunks = wave.shape[1] // int(chunk_length * sr)
+        wave = wave[:, :total_chunks * int(chunk_length * sr)]
+        
         for chunk_idx, chunk in enumerate(wave.split(int(chunk_length * sr), -1)):
             if zero_cache is not None:
                 output, zero_cache = model(chunk, cache=zero_cache, return_cache=True)
