@@ -12,6 +12,7 @@ import logging
 import tensorflow as tf
 import wave
 import sys
+import torch.nn.functional as F
 
 # 캐시 디렉토리 설정
 CACHE_DIR = '/data/.cache'
@@ -223,6 +224,18 @@ def main():
                       '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path]
             subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
+        # pad audio
+        wav_tensor, sr = torchaudio.load(audio_path)  # wav_tensor.shape = [1, orig_samples]
+        orig_samples = wav_tensor.shape[1]
+        target_samples = int((end - start) * sr)   # e.g. (9.0 - 1.0) * 16000 = 128000
+        pad_samples = target_samples - orig_samples     # e.g. 128000 - 127464 = 536 (add padding to the end)
+
+        if pad_samples > 0:
+            # add padding to the end
+            wav_tensor = F.pad(wav_tensor, (0, pad_samples))  # (left, right) tuple
+            # save the padded audio
+            torchaudio.save(audio_path, wav_tensor, sr)
+
         # extract image frames to JPEGImages
         image_dir = os.path.join(SAMPLE_CHUNKED_PATH, "JPEGImages", segment_name)
         os.makedirs(image_dir, exist_ok=True)
@@ -230,6 +243,23 @@ def main():
                   '-vf', f'fps={fps}', image_dir + '/%06d.jpg']
         subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
+        # 디버깅 정보 출력
+        print(f"\nSegment: {segment_name}")
+        print(f"Audio path: {audio_path}")
+        print(f"Image dir: {image_dir}")
+        frame_files = sorted(os.listdir(image_dir))
+        print(f"Number of frames: {len(frame_files)}")
+        print(f"Frame files: {frame_files}")
+        with wave.open(audio_path, 'r') as f:
+            audio_frames = f.getnframes()
+            audio_rate = f.getframerate()
+            audio_duration = audio_frames / float(audio_rate)
+            print(f"Audio duration: {audio_duration:.4f}s")
+            print(f"Audio frames: {audio_frames}")
+            print(f"Audio rate: {audio_rate}")
+        print(f"Expected duration (frames * chunk): {len(frame_files) * args.chunk_length:.4f}s")
+        print(f"Start: {start}, End: {end}, Duration: {end-start}")
+        
         # extract and save VGGish features
         vggish_output_path = os.path.join(SAMPLE_CHUNKED_PATH, "FEATAudios", f"{segment_name}.npy")
         if not os.path.exists(vggish_output_path):
