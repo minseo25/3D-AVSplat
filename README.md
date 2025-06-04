@@ -117,4 +117,4 @@ cd ..
 
 | Visualization | Binary Mask |
 |:---:|:---:|
-| <img src="images/avs.jpg" width="400" height="300"> | <img src="images/bitmask.png" width="400" height="300"> |
+| <img src="images/avs.jpg" width="600" height="300"> | <img src="images/bitmask.png" width="600" height="300"> |
