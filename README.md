@@ -53,7 +53,7 @@ cd ..
      - 1.0s chunks: 1 fps
    - `-s, --sample_name`: Name of the input video file (default: funny_dogs.mp4)
 
-3. The output will be organized as follows:
+2.1. The output will be organized as follows:
    ``` 
    samples_chunked/
       └── FEATAudios/
@@ -81,7 +81,7 @@ cd ..
    ```
 
 
-4. Run the following command in the project root:
+3. Run the following command in the project root:
    ```bash
    python segment_2d.py
    ```
@@ -93,3 +93,28 @@ cd ..
    - `--output-dir`: Directory to save output visualizations (default: samples_avis/)
    - `--audio-dir`: Directory containing audio features (default: samples_chunked/FEATAudios/)
    - `--confidence`: Minimum score for instance predictions (default: 0.3)
+
+3.1. The output will be organized as follows:
+   ``` 
+   samples_avis/
+      └── your_video_name_st1_et1/
+         ├── binary_masks/
+         |     └── # AVS bitmasks visualization
+         ├── masks/
+         |     └── # AVS bitmasks
+         ├── 0000001.jpg # AVS visualization
+         ├── 0000002.jpg # AVS visualization
+         ├── ...
+      └── your_video_name_st2_et2/
+         ├── binary_masks/
+         |     └── # AVS bitmasks visualization
+         ├── masks/
+         |     └── # AVS bitmasks
+         ├── 0000001.jpg # AVS visualization
+         ├── 0000002.jpg # AVS visualization
+         ├── ...
+   ```
+
+| Visualization | Binary Mask |
+|:---:|:---:|
+| <img src="images/avs.jpg" width="400" height="300"> | <img src="images/bitmask.png" width="400" height="300"> |
