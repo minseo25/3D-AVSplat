@@ -144,13 +144,13 @@ def save_clap_embedding(audio_path, output_dir):
         print(f"Error in save_clap_embedding: {e}")
         return False
 
-def extract_vggish_features(audio_path, output_dir, step_sec=1.0):
+def extract_vggish_features(audio_path, output_dir, step_sec=0.25):
     """
     Extract VGGish features from audio file
     Args:
         audio_path: Path to audio file
         output_dir: Directory to save features
-        step_sec: Time step in seconds (default: 1.0 for 1fps)
+        step_sec: Time step in seconds (default: 0.25 for 4fps)
     """
     try:
         # VGGish model file path

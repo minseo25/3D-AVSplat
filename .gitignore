@@ -23,6 +23,9 @@ avis/results/*
 avis/results/*
 samples_avis/*
 
+# stereocrw results
+samples_tde/*
+
 # detectron2 build files
 avis/avism/detectron2/build/
 avis/avism/detectron2/detectron2.egg-info/

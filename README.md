@@ -99,8 +99,32 @@ cd ..
          └── your_video_name_st3_et3.wav
    ```
 
-
 3. Run the following command in the project root:
+   ```bash
+   chmod +x ./stereo.sh
+   ./stereo.sh     # default frame rate is 4 (corresponds to chunk length 0.25s)
+   ./stereo.sh 4   # explicitly set frame rate to 4 (chunk length 0.25s)
+   ./stereo.sh 2   # set frame rate to 2 (chunk length 0.5s)
+   ```
+   Note: frame rate is inversely proportional to chunk length:
+   - frame rate 4 = chunk length 0.25s
+   - frame rate 2 = chunk length 0.5s
+
+3.1. The output will be organized as follows:
+   ```
+   samples_tde/
+      └── video_name/
+         ├── output.mp4    # Generated video with time delay visualization
+         └── depth.log     # Time delay estimation results
+            # Format: "time_chunk time_delay"
+            # Example:
+            # 0.00-0.25 -0.11  # Negative: left, Positive: right
+            # 0.25-0.50 -0.09
+            # 0.50-0.75 -0.01
+            # 0.75-1.00 0.19
+   ```
+
+4. Run the following command in the project root:
    ```bash
    python segment_2d.py
    ```
@@ -114,7 +138,7 @@ cd ..
    - `--audio-dir`: Directory containing audio features (default: samples_chunked/FEATAudios/)
    - `--confidence`: Minimum score for instance predictions (default: 0.3)
 
-3.1. The output will be organized as follows:
+4.1. The output will be organized as follows:
    ``` 
    samples_avis/
       └── your_video_name_st1_et1/
