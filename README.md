@@ -1,5 +1,11 @@
 # 3D-AVSplat
 
+## Special Thanks
+- [SAT](https://github.com/RicherMans/SAT) - Audio segmentation model
+- [CLAP](https://github.com/LAION-AI/CLAP) - Audio-text embedding model
+- [AVIS](https://github.com/ruohaoguo/avis) - Audio-visual segmentation model
+- [STEREOCRW](https://github.com/IFICL/stereocrw) - Stereo-based Time Delay Estimation
+
 ## Installation
 
 ```bash
@@ -37,6 +43,11 @@ mkdir checkpoints # and download model checkpoints
 cd ../audio_feature_extractor/
 wget https://storage.googleapis.com/audioset/vggish_model.ckpt
 wget https://storage.googleapis.com/audioset/vggish_pca_params.npz
+
+# download stereocrw model
+cd ../stereocrw
+chmod +x ./scripts/download_models.sh
+./scripts/download_models.sh
 
 # move back to project root
 cd ..

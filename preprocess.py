@@ -188,7 +188,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', type=str, default='SAT_T_1s')
     parser.add_argument('-c', '--chunk_length', type=float, default=0.25, choices=[0.2, 0.25, 0.5, 1.0])
-    parser.add_argument('-s', '--sample_name', type=str, default='funny_dogs.mp4')
+    parser.add_argument('-s', '--sample_name', type=str, default='guitar.mp4')
     args = parser.parse_args()
     fps_lists = {0.2: 5, 0.25: 4, 0.5: 2, 1.0: 1}
     fps = fps_lists[args.chunk_length]

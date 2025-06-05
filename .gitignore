@@ -1,7 +1,7 @@
 .venv/
 __pycache__/
 samples/*
-!samples/funny_dogs.mp4
+!samples/guitar.mp4
 samples_chunked/*
 audio_feature_extractor/*.ckpt
 audio_feature_extractor/*.npz
