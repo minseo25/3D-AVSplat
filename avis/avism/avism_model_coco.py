@@ -446,6 +446,7 @@ class AVISM_COCO(nn.Module):
 
         confidence = 0.3
         indices = torch.nonzero(scores_per_video > confidence).squeeze(-1)
+        indices = indices.to(masks_per_video.device)
         scores_per_video = scores_per_video[indices]
         labels_per_video = labels_per_video[indices]
         masks_per_video = masks_per_video[indices]

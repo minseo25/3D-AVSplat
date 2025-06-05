@@ -3,8 +3,15 @@
 ## Installation
 
 ```bash
+# download python3.8 in your server
+apt install software-properties-common
+add-apt-repository ppa:deadsnakes/ppa
+apt install python3.8 python3.8-venv python3.8-dev
+python3.8 --version # check if successfully installed
+
+# install ffmpeg
 apt-get update
-apt-get install ffmpeg python3.8-dev
+apt-get install ffmpeg
 
 # Create and activate virtual environment
 python3.8 -m venv .venv
@@ -47,11 +54,12 @@ cd ..
 
    Optional arguments:
    - `-m, --model`: Audio segmentation model name (default: SAT_T_1s)
-   - `-c, --chunk_length`: Length of each chunk in seconds (default: 0.25, choices: [0.25, 0.5, 1.0])
+   - `-c, --chunk_length`: Length of each chunk in seconds (default: 0.25, choices: [0.2, 0.25, 0.5, 1.0])
+     - 0.2s chunks: 5 fps
      - 0.25s chunks: 4 fps
      - 0.5s chunks: 2 fps
      - 1.0s chunks: 1 fps
-   - `-s, --sample_name`: Name of the input video file (default: funny_dogs.mp4)
+   - `-s, --sample_name`: Name of the input video file (default: guitar.mp4)
 
 2.1. The output will be organized as follows:
    ``` 
@@ -88,7 +96,8 @@ cd ..
    This will apply 2D audio-visual segmentation by frame level.
 
    Optional arguments:
-   - `--config-file`: Path to config file (default: avis/configs/avism/R50/avism_R50_IN.yaml)
+   - `--config-file`: Path to config file (default: avis/configs/avism/R50/avism_R50_COCO.yaml)
+   - `--opt MODEL.WEIGHTS`: Path to model checkpoint (default: avis/checkpoints/AVISM_R50_COCO.pth)
    - `--input-dir`: Directory containing input video frames (default: samples_chunked/JPEGImages/)
    - `--output-dir`: Directory to save output visualizations (default: samples_avis/)
    - `--audio-dir`: Directory containing audio features (default: samples_chunked/FEATAudios/)
