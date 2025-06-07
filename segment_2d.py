@@ -43,14 +43,14 @@ def get_parser():
     parser = argparse.ArgumentParser(description="avism demo for builtin configs")
     parser.add_argument(
         "--config-file",
-        default="avis/configs/avism/R50/avism_R50_COCO.yaml",
+        default="avis/configs/avism/SwinL/avism_SwinL_COCO.yaml",
         metavar="FILE",
         help="path to config file",
     )
     parser.add_argument(
         "--opts",
         help="Modify config options using the command-line 'KEY VALUE' pairs",
-        default=["MODEL.WEIGHTS", "avis/checkpoints/AVISM_R50_COCO.pth"],
+        default=["MODEL.WEIGHTS", "avis/checkpoints/AVISM_SwinL_COCO.pth"],
         nargs=argparse.REMAINDER,
     )
     parser.add_argument(
