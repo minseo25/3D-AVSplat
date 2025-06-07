@@ -103,8 +103,8 @@ cd ..
    ```bash
    chmod +x ./stereo.sh
    ./stereo.sh     # default frame rate is 4 (corresponds to chunk length 0.25s)
-   ./stereo.sh 4   # explicitly set frame rate to 4 (chunk length 0.25s)
-   ./stereo.sh 2   # set frame rate to 2 (chunk length 0.5s)
+   # ./stereo.sh 4   # explicitly set frame rate to 4 (chunk length 0.25s)
+   # ./stereo.sh 2   # set frame rate to 2 (chunk length 0.5s)
    ```
    Note: frame rate is inversely proportional to chunk length:
    - frame rate 4 = chunk length 0.25s
