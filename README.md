@@ -33,6 +33,7 @@ pip install -e .
 cd ../../mask2former/modeling/pixel_decoder/ops
 sh make.sh
 cd ../../../../
+# if you have dependencies issue, reinstall omegaconf : pip install "omegaconf==2.1.2"
 
 # download AVIS checkpoints
 # https://github.com/ruohaoguo/avis
@@ -162,3 +163,8 @@ cd ..
 | Visualization | Binary Mask |
 |:---:|:---:|
 | <img src="images/avs.jpg" width="400" height="600"> | <img src="images/bitmask.png" width="400" height="600"> |
+
+## TODO
+- [ ] MoSCA Integration
+- [ ] SAGA Integration
+- [ ] Visualization Support
